@@ -76,6 +76,14 @@ namespace RestClientUP.Controllers
             string topicMessage = string.Join('#', huid, hotelId, channelId, clientId, integrationId);
             var topicDetailsList = await GetKafkaTopicDetails(Convert.ToInt32(hotelId));
             var topicDetail = topicDetailsList.Where(x => x.Channelid == Convert.ToInt32(channelId)).First();
+            if(topicDetail == null)
+            {
+                topicDetail = new TopicDetails()
+                {
+                    TopicName = Configuration["Kafka:DefaultTopic"],
+                    PartitionCount = 0
+                };
+            }
             await SendMessageToKafka(topicMessage, topicDetail.TopicName, topicDetail.PartitionCount,hotelId);
         }
 
