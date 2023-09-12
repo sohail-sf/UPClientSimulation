@@ -34,8 +34,8 @@ namespace RestClientUP.Controllers
         {
             try
             {
-                await TestingSetup(Request);
-                return Ok("Record inserted!");
+                var topicname = await TestingSetup(Request);
+                return Ok("message inserted : "+ topicname);
             }catch(Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -43,7 +43,7 @@ namespace RestClientUP.Controllers
         }
 
 
-        private async Task TestingSetup(HttpRequest Request)
+        private async Task<string> TestingSetup(HttpRequest Request)
         {
             var hotelId = Request.Query["HotelId"].ToString();
             var channelId = Request.Query["ChId"].ToString();
@@ -75,8 +75,13 @@ namespace RestClientUP.Controllers
             // Kafka logic
             string topicMessage = string.Join('#', huid, hotelId, channelId, clientId, integrationId);
             var topicDetailsList = await GetKafkaTopicDetails(Convert.ToInt32(hotelId));
-            var topicDetail = topicDetailsList.Where(x => x.Channelid == Convert.ToInt32(channelId)).First();
-            if(topicDetail == null)
+            var topicDetailsListFiltered = topicDetailsList.Where(x => x.Channelid == Convert.ToInt32(channelId));
+            TopicDetails topicDetail = null;
+            if (topicDetailsListFiltered != null && topicDetailsListFiltered.Count() > 0)
+            {
+                topicDetail = topicDetailsListFiltered.First();
+                
+            } else
             {
                 topicDetail = new TopicDetails()
                 {
@@ -84,7 +89,7 @@ namespace RestClientUP.Controllers
                     PartitionCount = 0
                 };
             }
-            await SendMessageToKafka(topicMessage, topicDetail.TopicName, topicDetail.PartitionCount,hotelId);
+             return await SendMessageToKafka(topicMessage, topicDetail.TopicName, topicDetail.PartitionCount,hotelId);
         }
 
         private async Task SQLInsertRecord(string insertQuery)
@@ -190,7 +195,7 @@ namespace RestClientUP.Controllers
            return topicDetailsList;
         }
 
-        private async Task SendMessageToKafka(string message,string topicname, int totalPartition, string hotelid)
+        private async Task<string> SendMessageToKafka(string message,string topicname, int totalPartition, string hotelid)
         {
             var config = new ProducerConfig
             {
@@ -216,7 +221,7 @@ namespace RestClientUP.Controllers
             }
 
             Console.WriteLine("Insert completed in Kafka");
-
+            return topicname;
         }
     }
 
