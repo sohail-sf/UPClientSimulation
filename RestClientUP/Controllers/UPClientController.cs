@@ -74,22 +74,22 @@ namespace RestClientUP.Controllers
 
             // Kafka logic
             string topicMessage = string.Join('#', huid, hotelId, channelId, clientId, integrationId);
-            var topicDetailsList = await GetKafkaTopicDetails(Convert.ToInt32(hotelId));
-            var topicDetailsListFiltered = topicDetailsList.Where(x => x.Channelid == Convert.ToInt32(channelId));
-            TopicDetails topicDetail = null;
-            if (topicDetailsListFiltered != null && topicDetailsListFiltered.Count() > 0)
-            {
-                topicDetail = topicDetailsListFiltered.First();
+            //var topicDetailsList = await GetKafkaTopicDetails(Convert.ToInt32(hotelId));
+            //var topicDetailsListFiltered = topicDetailsList.Where(x => x.Channelid == Convert.ToInt32(channelId));
+            //TopicDetails topicDetail = null;
+            //if (topicDetailsListFiltered != null && topicDetailsListFiltered.Count() > 0)
+            //{
+            //    topicDetail = topicDetailsListFiltered.First();
                 
-            } else
-            {
-                topicDetail = new TopicDetails()
-                {
-                    TopicName = Configuration["Kafka:DefaultTopic"],
-                    PartitionCount = 0
-                };
-            }
-             return await SendMessageToKafka(topicMessage, topicDetail.TopicName, topicDetail.PartitionCount,hotelId);
+            //} else
+            //{
+            //    topicDetail = new TopicDetails()
+            //    {
+            //        TopicName = Configuration["Kafka:DefaultTopic"],
+            //        PartitionCount = 0
+            //    };
+            //}
+             return await SendMessageToKafka(topicMessage, topicName, 100,hotelId);
         }
 
         private async Task SQLInsertRecord(string insertQuery)
